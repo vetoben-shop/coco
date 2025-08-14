@@ -1,452 +1,447 @@
-diff --git a//dev/null b/pawn.html
-index 0000000000000000000000000000000000000000..d7394f8a1eacd34077635bee67bb5a52ad89a928 100644
---- a//dev/null
-+++ b/pawn.html
-@@ -0,0 +1,447 @@
-+<!DOCTYPE html>
-+<html lang="en">
-+<head>
-+  <meta charset="utf-8" />
-+  <title>Pawn — Coco pawnshop</title>
-+
-+  <!-- ===== [RESPONSIVE] 필수: 모바일 반응형 활성화 ===== -->
-+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-+
-+  <style>
-+    /* ====================== CSS (미니멀 & 반응형) ====================== */
-+    :root{
-+      --ink:#0f172a;         /* text */
-+      --muted:#64748b;       /* secondary */
-+      --line:#e2e8f0;        /* border */
-+      --bg:#f8fafc;          /* page */
-+      --card:#ffffff;        /* surface */
-+      --accent:#0ea5e9;      /* primary */
-+      --danger:#b91c1c;      /* delete */
-+      --good:#059669;        /* ok */
-+    }
-+    *{ box-sizing:border-box; }
-+    html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink);
-+      font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-+      -webkit-text-size-adjust:100%; text-size-adjust:100%;
-+    }
-+
-+    .page{ max-width:1200px; margin:0 auto; padding:16px; }
-+
-+    /* ===== [LAYOUT] 60/40 그리드 (데스크톱) → 1열(모바일) ===== */
-+    .grid{
-+      display:grid;
-+      grid-template-columns: 3fr 2fr; /* 60 / 40 */
-+      gap:16px;
-+    }
-+    @media (max-width: 1024px){
-+      .grid{ grid-template-columns: 1fr; } /* 스택 */
-+    }
-+
-+    /* 공통 카드 */
-+    .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
-+    .card h3{ margin:0 0 10px; font-size:16px; }
-+
-+    /* ===== Block 1: 헤더 바 ===== */
-+    .headerbar{
-+      display:flex; align-items:center; justify-content:space-between; gap:12px;
-+      padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card);
-+      margin-bottom:12px;
-+    }
-+    .brand{ font-weight:800; font-size:18px; letter-spacing:.2px; }
-+    .biz{ color:var(--muted); font-size:12px; }
-+    .today{ font-size:12px; color:var(--muted); white-space:nowrap; }
-+
-+    /* ===== Block 2: 티켓 핵심 필드 ===== */
-+    .form-grid{
-+      display:grid;
-+      grid-template-columns: repeat(4, minmax(0,1fr));
-+      gap:10px;
-+    }
-+    @media (max-width: 1024px){
-+      .form-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-+    }
-+    @media (max-width: 560px){
-+      .form-grid{ grid-template-columns: 1fr; }
-+    }
-+    label{ display:block; font-weight:600; font-size:12px; color:#334155; margin-bottom:4px; }
-+    input, select{
-+      width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; background:#fff;
-+      font:inherit;
-+    }
-+
-+    /* ===== Block 3: Collateral + 액션 ===== */
-+    .toolbar{
-+      display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;
-+    }
-+    .btn{
-+      border:1px solid var(--line); background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;
-+    }
-+    .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
-+    .btn.danger{ border-color:var(--danger); color:#fff; background:var(--danger); }
-+    .btn.ghost{ background:#fff; color:#0f172a; }
-+
-+    .items-wrap{ overflow:auto; border:1px solid var(--line); border-radius:10px; }
-+
-+    /* 표 기본 */
-+    table{ width:100%; border-collapse:collapse; font-size:13px; }
-+    th, td{ border-top:1px solid var(--line); padding:8px; text-align:left; vertical-align:top; }
-+    thead th{ position:sticky; top:0; background:#f1f5f9; z-index:1; }
-+    tfoot td{ background:#f8fafc; font-weight:700; }
-+
-+    /* [RESPONSIVE TABLE] 모바일 카드화 */
-+    @media (max-width: 760px){
-+      .items{ border:0; }
-+      .items thead{ display:none; }
-+      .items tr{ display:block; border-top:1px solid var(--line); }
-+      .items td{ display:grid; grid-template-columns: 40% 1fr; border:none; border-bottom:1px dotted var(--line); padding:10px 8px; }
-+      .items td::before{ content: attr(data-label); font-weight:700; color:#334155; padding-right:8px; }
-+      .items td:last-child{ border-bottom:0; }
-+    }
-+
-+    .upload{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
-+    .upload input[type="file"]{ padding:6px; border:1px dashed var(--line); border-radius:8px; background:#fff; }
-+
-+    /* ===== Block 4/5: 오른쪽 패널 ===== */
-+    .tabs-head{
-+      display:flex; align-items:center; justify-content:space-between; gap:10px;
-+    }
-+    .tab-buttons{ display:flex; flex-wrap:wrap; gap:6px; }
-+    .tab-buttons button{
-+      padding:6px 10px; border:1px solid var(--line); background:#fff; border-radius:999px; cursor:pointer; font-weight:600;
-+    }
-+    .tab-buttons button.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
-+    .tools{ display:flex; gap:6px; flex-wrap:wrap; }
-+    .tools input[type="search"]{ border:1px solid var(--line); border-radius:999px; padding:8px 12px; min-width:180px; }
-+    .list{ margin-top:10px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff; }
-+    .row{ display:grid; grid-template-columns: 1.4fr .8fr .8fr .8fr .8fr; gap:8px; padding:10px; border-top:1px solid var(--line); align-items:center; }
-+    .row.header{ background:#f1f5f9; font-weight:700; position:sticky; top:0; z-index:1; }
-+    .row:hover{ background:#f8fafc; }
-+    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--line); }
-+    .badge.ok{ background:#ecfdf5; color:var(--good); border-color:#bbf7d0; }
-+    .badge.due{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
-+    .badge.over{ background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
-+
-+    @media (max-width: 1024px){
-+      .row{ grid-template-columns: 1.4fr 1fr 1fr; }
-+      .row .col-hide-md{ display:none; }
-+    }
-+    @media (max-width: 640px){
-+      .row{ grid-template-columns: 1fr; }
-+      .row.header{ display:none; }
-+      .row > div{ display:flex; justify-content:space-between; gap:8px; border-top:1px dashed var(--line); padding-top:6px; }
-+      .row > div:first-child{ border-top:none; padding-top:0; }
-+      .row .label{ color:#334155; font-weight:700; }
-+    }
-+    /* ==== SURGICAL APPEND START ==== */
-+    .items{ table-layout:fixed; }
-+    .items td input{ width:100%; min-width:0; }
-+    .form-grid input{ padding:7px 8px; } /* was 9px 10px */
-+    table{ font-size:12.5px; } /* was 13px */
-+    .page{ max-width:1140px; } /* was 1200px */
-+    #bp-debug{position:fixed;bottom:8px;right:8px;padding:4px 8px;background:#000;color:#fff;font:12px/1;border-radius:6px;opacity:.75;z-index:9999}
-+    #bp-debug::after{content:"≥1025px desktop";}
-+    @media (max-width:1024px){#bp-debug::after{content:"≤1024px stack (1 col)";}}
-+    @media (max-width:760px){#bp-debug::after{content:"≤760px items→cards";}}
-+    @media (max-width:640px){#bp-debug::after{content:"≤640px right list→cards";}}
-+    /* ==== SURGICAL APPEND END ==== */
-+  </style>
-+</head>
-+<body>
-+  <div class="page">
-+
-+    <!-- ================== Block 1: 헤더 바 ================== -->
-+    <div class="headerbar" id="block1">
-+      <div>
-+        <div class="brand">Coco pawnshop</div>
-+        <div class="biz">645 S Hill st, Los Angeles, CA 90014 · Phone 213 261 9113 · Email pawn@vetoben.com · License 00004535</div>
-+      </div>
-+      <div class="today" id="today"></div>
-+    </div>
-+
-+    <!-- ================== 레이아웃 60/40 ================== -->
-+    <div class="grid">
-+      <!-- ========== 좌측 60% ========== -->
-+      <div>
-+
-+        <!-- ========== Block 2: 핵심 필드 ========== -->
-+        <section class="card" id="block2" aria-label="Ticket Essentials">
-+          <h3>Ticket</h3>
-+          <div class="form-grid">
-+            <div>
-+              <label for="pawnDate">Pawn Date</label>
-+              <input type="date" id="pawnDate" />
-+            </div>
-+            <div>
-+              <label for="custName">Customer Name</label>
-+              <input type="text" id="custName" placeholder="Full name" />
-+            </div>
-+            <div>
-+              <label for="phone">Phone</label>
-+              <input type="tel" id="phone" placeholder="e.g. 213-000-0000" />
-+            </div>
-+            <div>
-+              <label for="ticketNo">Ticket Number</label>
-+              <input type="text" id="ticketNo" placeholder="Auto" />
-+            </div>
-+
-+            <div>
-+              <label for="principal">Loan Amount</label>
-+              <input type="number" id="principal" inputmode="decimal" placeholder="0" />
-+            </div>
-+            <div>
-+              <label for="rate">Rate (%/month)</label>
-+              <input type="number" id="rate" inputmode="decimal" step="0.01" placeholder="3" />
-+            </div>
-+            <div>
-+              <label for="period">Interest Period (days)</label>
-+              <input type="number" id="period" step="1" value="30" />
-+            </div>
-+            <div>
-+              <label for="nextDue">Next Interest Due</label>
-+              <input type="text" id="nextDue" readonly />
-+            </div>
-+
-+            <div>
-+              <label for="maturity">Maturity</label>
-+              <input type="text" id="maturity" readonly />
-+            </div>
-+          </div>
-+        </section>
-+
-+        <!-- ========== Block 3: Collateral + 액션 ==========
-+             반응형: 표가 모바일에서 카드형으로 바뀜 -->
-+        <section class="card" id="block3" aria-label="Collateral">
-+          <div class="toolbar">
-+            <button class="btn primary" id="btn-save">Save</button>
-+            <button class="btn" id="btn-edit">Edit</button>
-+            <button class="btn" id="btn-send">Send</button>
-+            <button class="btn ghost" id="btn-print">Print</button>
-+            <button class="btn danger" id="btn-delete">Delete</button>
-+          </div>
-+
-+          <div class="items-wrap">
-+            <table class="items" id="itemsTable" aria-label="Pledged Items">
-+              <thead>
-+                <tr>
-+                  <th style="width:14%">Article*</th>
-+                  <th>Brand*</th>
-+                  <th>Model</th>
-+                  <th>Serial No.</th>
-+                  <th>Description</th>
-+                  <th>Inscription*</th>
-+                  <th>Owner Applied No.</th>
-+                  <th>Pattern</th>
-+                  <th>Color*</th>
-+                  <th>Material*</th>
-+                  <th>Size*</th>
-+                  <th>Size Unit*</th>
-+                  <th style="width:70px">Qty*</th>
-+                  <th style="width:110px">Amount*</th>
-+                  <th>Notes</th>
-+                </tr>
-+              </thead>
-+              <tbody id="tbody">
-+                <!-- 초기 한 줄 -->
-+              </tbody>
-+              <tfoot>
-+                <tr>
-+                  <td colspan="13" style="text-align:right">Total</td>
-+                  <td colspan="2"><strong id="total">$0.00</strong></td>
-+                </tr>
-+              </tfoot>
-+            </table>
-+          </div>
-+
-+          <div class="upload">
-+            <label for="files"><strong>Documents</strong> (jpg, png, pdf)</label>
-+            <input type="file" id="files" accept=".jpg,.jpeg,.png,.pdf" multiple />
-+            <button class="btn" id="btn-add">+ Add Item</button>
-+            <button class="btn" id="btn-clear">Clear All</button>
-+          </div>
-+        </section>
-+      </div>
-+
-+      <!-- ========== 우측 40% ========== -->
-+      <div>
-+        <!-- ========== Block 4: 레코드 탭 헤더 ==========
-+             도구: 검색 / 새로고침 / CSV -->
-+        <section class="card" id="block4">
-+          <div class="tabs-head">
-+            <div class="tab-buttons" role="tablist" aria-label="Records Tabs">
-+              <button class="active" data-tab="active" role="tab" aria-selected="true">Active</button>
-+              <button data-tab="interest" role="tab">Interest Collections</button>
-+              <button data-tab="delinq" role="tab">Delinquent Interest</button>
-+              <button data-tab="unpaid" role="tab">Unpaid Principal</button>
-+              <button data-tab="defaulted" role="tab">Default</button>
-+            </div>
-+            <div class="tools">
-+              <input type="search" id="q" placeholder="Search..." />
-+              <button class="btn" id="refresh">Refresh</button>
-+              <button class="btn" id="csv">CSV</button>
-+            </div>
-+          </div>
-+        </section>
-+
-+        <!-- ========== Block 5: 레코드 리스트 ========== -->
-+        <section class="card" id="block5">
-+          <div class="list" id="list">
-+            <div class="row header">
-+              <div>Ticket</div>
-+              <div>Status</div>
-+              <div class="col-hide-md">Customer</div>
-+              <div>Due</div>
-+              <div class="col-hide-md">Amount</div>
-+            </div>
-+            <!-- 샘플 항목 (클릭 시 ticket.html) -->
-+            <div class="row" data-href="/pawn/ticket.html?ticketNo=T-2025-00001">
-+              <div><strong>T-2025-00001</strong></div>
-+              <div><span class="badge due">DUE</span></div>
-+              <div class="col-hide-md">John Smith</div>
-+              <div>2025-09-10</div>
-+              <div class="col-hide-md">$300.00</div>
-+            </div>
-+            <div class="row" data-href="/pawn/ticket.html?ticketNo=T-2025-00002">
-+              <div><strong>T-2025-00002</strong></div>
-+              <div><span class="badge ok">PAID</span></div>
-+              <div class="col-hide-md">Alice Kim</div>
-+              <div>2025-08-22</div>
-+              <div class="col-hide-md">$600.00</div>
-+            </div>
-+            <div class="row" data-href="/pawn/ticket.html?ticketNo=T-2025-00003">
-+              <div><strong>T-2025-00003</strong></div>
-+              <div><span class="badge over">OVERDUE</span></div>
-+              <div class="col-hide-md">Mark Lee</div>
-+              <div>2025-07-15</div>
-+              <div class="col-hide-md">$900.00</div>
-+            </div>
-+          </div>
-+        </section>
-+      </div>
-+    </div>
-+  </div>
-+
-+  <script>
-+    /* ====================== JS (경량 기능) ====================== */
-+
-+    // 오늘 날짜
-+    (function(){
-+      const el = document.getElementById('today');
-+      const d = new Date();
-+      el.textContent = d.toLocaleString('en-US', {weekday:'short', year:'numeric', month:'short', day:'2-digit'});
-+    })();
-+
-+    // 핵심 필드: Ticket No 자동생성, Next Due / Maturity 계산
-+    const $ = (s, p=document)=>p.querySelector(s);
-+    const pawnDate = $('#pawnDate');
-+    const phone = $('#phone');
-+    const ticketNo = $('#ticketNo');
-+    const period = $('#period');
-+    const nextDue = $('#nextDue');
-+    const maturity = $('#maturity');
-+
-+    function ymd(d){ return d.toISOString().slice(0,10); }
-+    function addDays(dateStr, n){
-+      const d = dateStr ? new Date(dateStr) : new Date();
-+      d.setDate(d.getDate()+n);
-+      return ymd(d);
-+    }
-+    function format(dstr){ try { return new Date(dstr).toLocaleDateString(); } catch(e){ return ''; } }
-+
-+    function calcDates(){
-+      const pd = pawnDate.value || ymd(new Date());
-+      const per = parseInt(period.value || '30', 10);
-+      nextDue.value = format(addDays(pd, per));
-+      maturity.value = format(addDays(pd, 60));
-+    }
-+    function genTicket(){
-+      const last4 = (phone.value||'').replace(/\D/g,'').slice(-4) || '0000';
-+      const stamp = new Date().toISOString().replace(/\D/g,'').slice(2,8); // YYMMDD
-+      ticketNo.value = `T-${stamp}-${last4}`;
-+    }
-+    pawnDate.addEventListener('change', calcDates);
-+    period.addEventListener('input', calcDates);
-+    phone.addEventListener('input', genTicket);
-+    window.addEventListener('load', ()=>{ pawnDate.value = ymd(new Date()); calcDates(); });
-+
-+    // Collateral 행 추가/삭제/합계
-+    const tbody = $('#tbody');
-+    const totalEl = $('#total');
-+    function money(n){ return (isNaN(n)?0:n).toLocaleString(undefined, {style:'currency', currency:'USD', minimumFractionDigits:2}); }
-+
-+    function addRow(data={}){
-+      const tr = document.createElement('tr');
-+
-+      const cols = [
-+        {key:'article', req:true,  ph:'Ring'},
-+        {key:'brand',   req:true,  ph:'Brand'},
-+        {key:'model',   req:false, ph:'Model'},
-+        {key:'serial',  req:false, ph:'Serial'},
-+        {key:'desc',    req:false, ph:'Short description'},
-+        {key:'insc',    req:true,  ph:'Inscription'},
-+        {key:'ownerNo', req:false, ph:'Owner applied no'},
-+        {key:'pattern', req:false, ph:'Pattern'},
-+        {key:'color',   req:true,  ph:'Color'},
-+        {key:'material',req:true,  ph:'Material'},
-+        {key:'size',    req:true,  ph:'Size'},
-+        {key:'unit',    req:true,  ph:'Unit'},
-+        {key:'qty',     req:true,  ph:'1', type:'number', width:'70px'},
-+        {key:'amount',  req:true,  ph:'0.00', type:'number', step:'0.01', width:'110px'},
-+        {key:'notes',   req:false, ph:'Notes'}
-+      ];
-+
-+      cols.forEach((c, i)=>{
-+        const td = document.createElement('td');
-+        td.setAttribute('data-label', document.querySelector('thead th:nth-child('+ (i+1) +')').textContent);
-+
-+        const input = document.createElement('input');
-+        input.type = c.type || 'text';
-+        if (c.step) input.step = c.step;
-+        input.placeholder = c.ph;
-+        input.value = (data[c.key] ?? '');
-+        input.required = !!c.req;
-+        input.style.width = c.width || '100%';
-+        input.addEventListener('input', recompute);
-+        td.appendChild(input);
-+        tr.appendChild(td);
-+      });
-+
-+      tbody.appendChild(tr);
-+    }
-+
-+    function recompute(){
-+      let sum = 0;
-+      tbody.querySelectorAll('tr').forEach(tr=>{
-+        const cells = tr.querySelectorAll('td');
-+        const qty = parseFloat(cells[12].querySelector('input').value || '0');
-+        const amt = parseFloat(cells[13].querySelector('input').value || '0');
-+        sum += (isNaN(qty)||isNaN(amt)) ? 0 : (qty*amt);
-+      });
-+      totalEl.textContent = money(sum);
-+    }
-+
-+    $('#btn-add').addEventListener('click', ()=>{ addRow(); });
-+    $('#btn-clear').addEventListener('click', ()=>{
-+      tbody.innerHTML=''; recompute();
-+      addRow();
-+    });
-+
-+    // 초기 1행
-+    addRow();
-+
-+    // 액션들 (실백엔드 연동 전까지 기본 동작)
-+    $('#btn-print').addEventListener('click', ()=> window.print());
-+    $('#btn-save').addEventListener('click', ()=> alert('Save: connect POST /api/pawn'));
-+    $('#btn-edit').addEventListener('click', ()=> alert('Edit mode: implement as needed'));
-+    $('#btn-send').addEventListener('click', ()=> alert('Send: connect email/SMS API'));
-+    $('#btn-delete').addEventListener('click', ()=> confirm('Delete this ticket? (server required)'));
-+
-+    // 레코드 리스트: 클릭 네비게이션
-+    document.querySelectorAll('#list .row:not(.header)').forEach(r=>{
-+      r.addEventListener('click', ()=>{ const href = r.getAttribute('data-href'); if(href) location.assign(href); });
-+      r.style.cursor='pointer';
-+    });
-+
-+  </script>
-+  <div id="bp-debug"></div>
-+</body>
-+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Pawn — Coco pawnshop</title>
+
+  <!-- ===== [RESPONSIVE] 필수: 모바일 반응형 활성화 ===== -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <style>
+    /* ====================== CSS (미니멀 & 반응형) ====================== */
+    :root{
+      --ink:#0f172a;         /* text */
+      --muted:#64748b;       /* secondary */
+      --line:#e2e8f0;        /* border */
+      --bg:#f8fafc;          /* page */
+      --card:#ffffff;        /* surface */
+      --accent:#0ea5e9;      /* primary */
+      --danger:#b91c1c;      /* delete */
+      --good:#059669;        /* ok */
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink);
+      font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    }
+
+    .page{ max-width:1200px; margin:0 auto; padding:16px; }
+
+    /* ===== [LAYOUT] 60/40 그리드 (데스크톱) → 1열(모바일) ===== */
+    .grid{
+      display:grid;
+      grid-template-columns: 3fr 2fr; /* 60 / 40 */
+      gap:16px;
+    }
+    @media (max-width: 1024px){
+      .grid{ grid-template-columns: 1fr; } /* 스택 */
+    }
+
+    /* 공통 카드 */
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+    .card h3{ margin:0 0 10px; font-size:16px; }
+
+    /* ===== Block 1: 헤더 바 ===== */
+    .headerbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card);
+      margin-bottom:12px;
+    }
+    .brand{ font-weight:800; font-size:18px; letter-spacing:.2px; }
+    .biz{ color:var(--muted); font-size:12px; }
+    .today{ font-size:12px; color:var(--muted); white-space:nowrap; }
+
+    /* ===== Block 2: 티켓 핵심 필드 ===== */
+    .form-grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 1024px){
+      .form-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 560px){
+      .form-grid{ grid-template-columns: 1fr; }
+    }
+    label{ display:block; font-weight:600; font-size:12px; color:#334155; margin-bottom:4px; }
+    input, select{
+      width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; background:#fff;
+      font:inherit;
+    }
+
+    /* ===== Block 3: Collateral + 액션 ===== */
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;
+    }
+    .btn{
+      border:1px solid var(--line); background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;
+    }
+    .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+    .btn.danger{ border-color:var(--danger); color:#fff; background:var(--danger); }
+    .btn.ghost{ background:#fff; color:#0f172a; }
+
+    .items-wrap{ overflow:auto; border:1px solid var(--line); border-radius:10px; }
+
+    /* 표 기본 */
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    th, td{ border-top:1px solid var(--line); padding:8px; text-align:left; vertical-align:top; }
+    thead th{ position:sticky; top:0; background:#f1f5f9; z-index:1; }
+    tfoot td{ background:#f8fafc; font-weight:700; }
+
+    /* [RESPONSIVE TABLE] 모바일 카드화 */
+    @media (max-width: 760px){
+      .items{ border:0; }
+      .items thead{ display:none; }
+      .items tr{ display:block; border-top:1px solid var(--line); }
+      .items td{ display:grid; grid-template-columns: 40% 1fr; border:none; border-bottom:1px dotted var(--line); padding:10px 8px; }
+      .items td::before{ content: attr(data-label); font-weight:700; color:#334155; padding-right:8px; }
+      .items td:last-child{ border-bottom:0; }
+    }
+
+    .upload{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+    .upload input[type="file"]{ padding:6px; border:1px dashed var(--line); border-radius:8px; background:#fff; }
+
+    /* ===== Block 4/5: 오른쪽 패널 ===== */
+    .tabs-head{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .tab-buttons{ display:flex; flex-wrap:wrap; gap:6px; }
+    .tab-buttons button{
+      padding:6px 10px; border:1px solid var(--line); background:#fff; border-radius:999px; cursor:pointer; font-weight:600;
+    }
+    .tab-buttons button.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    .tools{ display:flex; gap:6px; flex-wrap:wrap; }
+    .tools input[type="search"]{ border:1px solid var(--line); border-radius:999px; padding:8px 12px; min-width:180px; }
+    .list{ margin-top:10px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff; }
+    .row{ display:grid; grid-template-columns: 1.4fr .8fr .8fr .8fr .8fr; gap:8px; padding:10px; border-top:1px solid var(--line); align-items:center; }
+    .row.header{ background:#f1f5f9; font-weight:700; position:sticky; top:0; z-index:1; }
+    .row:hover{ background:#f8fafc; }
+    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--line); }
+    .badge.ok{ background:#ecfdf5; color:var(--good); border-color:#bbf7d0; }
+    .badge.due{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .badge.over{ background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+
+    @media (max-width: 1024px){
+      .row{ grid-template-columns: 1.4fr 1fr 1fr; }
+      .row .col-hide-md{ display:none; }
+    }
+    @media (max-width: 640px){
+      .row{ grid-template-columns: 1fr; }
+      .row.header{ display:none; }
+      .row > div{ display:flex; justify-content:space-between; gap:8px; border-top:1px dashed var(--line); padding-top:6px; }
+      .row > div:first-child{ border-top:none; padding-top:0; }
+      .row .label{ color:#334155; font-weight:700; }
+    }
+    /* ==== SURGICAL APPEND START ==== */
+    .items{ table-layout:fixed; }
+    .items td input{ width:100%; min-width:0; }
+    .form-grid input{ padding:7px 8px; } /* was 9px 10px */
+    table{ font-size:12.5px; } /* was 13px */
+    .page{ max-width:1140px; } /* was 1200px */
+    #bp-debug{position:fixed;bottom:8px;right:8px;padding:4px 8px;background:#000;color:#fff;font:12px/1;border-radius:6px;opacity:.75;z-index:9999}
+    #bp-debug::after{content:"≥1025px desktop";}
+    @media (max-width:1024px){#bp-debug::after{content:"≤1024px stack (1 col)";}}
+    @media (max-width:760px){#bp-debug::after{content:"≤760px items→cards";}}
+    @media (max-width:640px){#bp-debug::after{content:"≤640px right list→cards";}}
+    /* ==== SURGICAL APPEND END ==== */
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ================== Block 1: 헤더 바 ================== -->
+    <div class="headerbar" id="block1">
+      <div>
+        <div class="brand">Coco pawnshop</div>
+        <div class="biz">645 S Hill st, Los Angeles, CA 90014 · Phone 213 261 9113 · Email pawn@vetoben.com · License 00004535</div>
+      </div>
+      <div class="today" id="today"></div>
+    </div>
+
+    <!-- ================== 레이아웃 60/40 ================== -->
+    <div class="grid">
+      <!-- ========== 좌측 60% ========== -->
+      <div>
+
+        <!-- ========== Block 2: 핵심 필드 ========== -->
+        <section class="card" id="block2" aria-label="Ticket Essentials">
+          <h3>Ticket</h3>
+          <div class="form-grid">
+            <div>
+              <label for="pawnDate">Pawn Date</label>
+              <input type="date" id="pawnDate" />
+            </div>
+            <div>
+              <label for="custName">Customer Name</label>
+              <input type="text" id="custName" placeholder="Full name" />
+            </div>
+            <div>
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" placeholder="e.g. 213-000-0000" />
+            </div>
+            <div>
+              <label for="ticketNo">Ticket Number</label>
+              <input type="text" id="ticketNo" placeholder="Auto" />
+            </div>
+
+            <div>
+              <label for="principal">Loan Amount</label>
+              <input type="number" id="principal" inputmode="decimal" placeholder="0" />
+            </div>
+            <div>
+              <label for="rate">Rate (%/month)</label>
+              <input type="number" id="rate" inputmode="decimal" step="0.01" placeholder="3" />
+            </div>
+            <div>
+              <label for="period">Interest Period (days)</label>
+              <input type="number" id="period" step="1" value="30" />
+            </div>
+            <div>
+              <label for="nextDue">Next Interest Due</label>
+              <input type="text" id="nextDue" readonly />
+            </div>
+
+            <div>
+              <label for="maturity">Maturity</label>
+              <input type="text" id="maturity" readonly />
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== Block 3: Collateral + 액션 ==========
+             반응형: 표가 모바일에서 카드형으로 바뀜 -->
+        <section class="card" id="block3" aria-label="Collateral">
+          <div class="toolbar">
+            <button class="btn primary" id="btn-save">Save</button>
+            <button class="btn" id="btn-edit">Edit</button>
+            <button class="btn" id="btn-send">Send</button>
+            <button class="btn ghost" id="btn-print">Print</button>
+            <button class="btn danger" id="btn-delete">Delete</button>
+          </div>
+
+          <div class="items-wrap">
+            <table class="items" id="itemsTable" aria-label="Pledged Items">
+              <thead>
+                <tr>
+                  <th style="width:14%">Article*</th>
+                  <th>Brand*</th>
+                  <th>Model</th>
+                  <th>Serial No.</th>
+                  <th>Description</th>
+                  <th>Inscription*</th>
+                  <th>Owner Applied No.</th>
+                  <th>Pattern</th>
+                  <th>Color*</th>
+                  <th>Material*</th>
+                  <th>Size*</th>
+                  <th>Size Unit*</th>
+                  <th style="width:70px">Qty*</th>
+                  <th style="width:110px">Amount*</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <!-- 초기 한 줄 -->
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="13" style="text-align:right">Total</td>
+                  <td colspan="2"><strong id="total">$0.00</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="upload">
+            <label for="files"><strong>Documents</strong> (jpg, png, pdf)</label>
+            <input type="file" id="files" accept=".jpg,.jpeg,.png,.pdf" multiple />
+            <button class="btn" id="btn-add">+ Add Item</button>
+            <button class="btn" id="btn-clear">Clear All</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- ========== 우측 40% ========== -->
+      <div>
+        <!-- ========== Block 4: 레코드 탭 헤더 ==========
+             도구: 검색 / 새로고침 / CSV -->
+        <section class="card" id="block4">
+          <div class="tabs-head">
+            <div class="tab-buttons" role="tablist" aria-label="Records Tabs">
+              <button class="active" data-tab="active" role="tab" aria-selected="true">Active</button>
+              <button data-tab="interest" role="tab">Interest Collections</button>
+              <button data-tab="delinq" role="tab">Delinquent Interest</button>
+              <button data-tab="unpaid" role="tab">Unpaid Principal</button>
+              <button data-tab="defaulted" role="tab">Default</button>
+            </div>
+            <div class="tools">
+              <input type="search" id="q" placeholder="Search..." />
+              <button class="btn" id="refresh">Refresh</button>
+              <button class="btn" id="csv">CSV</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== Block 5: 레코드 리스트 ========== -->
+        <section class="card" id="block5">
+          <div class="list" id="list">
+            <div class="row header">
+              <div>Ticket</div>
+              <div>Status</div>
+              <div class="col-hide-md">Customer</div>
+              <div>Due</div>
+              <div class="col-hide-md">Amount</div>
+            </div>
+            <!-- 샘플 항목 (클릭 시 ticket.html) -->
+            <div class="row" data-href="/pawn/ticket.html?ticketNo=T-2025-00001">
+              <div><strong>T-2025-00001</strong></div>
+              <div><span class="badge due">DUE</span></div>
+              <div class="col-hide-md">John Smith</div>
+              <div>2025-09-10</div>
+              <div class="col-hide-md">$300.00</div>
+            </div>
+            <div class="row" data-href="/pawn/ticket.html?ticketNo=T-2025-00002">
+              <div><strong>T-2025-00002</strong></div>
+              <div><span class="badge ok">PAID</span></div>
+              <div class="col-hide-md">Alice Kim</div>
+              <div>2025-08-22</div>
+              <div class="col-hide-md">$600.00</div>
+            </div>
+            <div class="row" data-href="/pawn/ticket.html?ticketNo=T-2025-00003">
+              <div><strong>T-2025-00003</strong></div>
+              <div><span class="badge over">OVERDUE</span></div>
+              <div class="col-hide-md">Mark Lee</div>
+              <div>2025-07-15</div>
+              <div class="col-hide-md">$900.00</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ====================== JS (경량 기능) ====================== */
+
+    // 오늘 날짜
+    (function(){
+      const el = document.getElementById('today');
+      const d = new Date();
+      el.textContent = d.toLocaleString('en-US', {weekday:'short', year:'numeric', month:'short', day:'2-digit'});
+    })();
+
+    // 핵심 필드: Ticket No 자동생성, Next Due / Maturity 계산
+    const $ = (s, p=document)=>p.querySelector(s);
+    const pawnDate = $('#pawnDate');
+    const phone = $('#phone');
+    const ticketNo = $('#ticketNo');
+    const period = $('#period');
+    const nextDue = $('#nextDue');
+    const maturity = $('#maturity');
+
+    function ymd(d){ return d.toISOString().slice(0,10); }
+    function addDays(dateStr, n){
+      const d = dateStr ? new Date(dateStr) : new Date();
+      d.setDate(d.getDate()+n);
+      return ymd(d);
+    }
+    function format(dstr){ try { return new Date(dstr).toLocaleDateString(); } catch(e){ return ''; } }
+
+    function calcDates(){
+      const pd = pawnDate.value || ymd(new Date());
+      const per = parseInt(period.value || '30', 10);
+      nextDue.value = format(addDays(pd, per));
+      maturity.value = format(addDays(pd, 60));
+    }
+    function genTicket(){
+      const last4 = (phone.value||'').replace(/\D/g,'').slice(-4) || '0000';
+      const stamp = new Date().toISOString().replace(/\D/g,'').slice(2,8); // YYMMDD
+      ticketNo.value = `T-${stamp}-${last4}`;
+    }
+    pawnDate.addEventListener('change', calcDates);
+    period.addEventListener('input', calcDates);
+    phone.addEventListener('input', genTicket);
+    window.addEventListener('load', ()=>{ pawnDate.value = ymd(new Date()); calcDates(); });
+
+    // Collateral 행 추가/삭제/합계
+    const tbody = $('#tbody');
+    const totalEl = $('#total');
+    function money(n){ return (isNaN(n)?0:n).toLocaleString(undefined, {style:'currency', currency:'USD', minimumFractionDigits:2}); }
+
+    function addRow(data={}){
+      const tr = document.createElement('tr');
+
+      const cols = [
+        {key:'article', req:true,  ph:'Ring'},
+        {key:'brand',   req:true,  ph:'Brand'},
+        {key:'model',   req:false, ph:'Model'},
+        {key:'serial',  req:false, ph:'Serial'},
+        {key:'desc',    req:false, ph:'Short description'},
+        {key:'insc',    req:true,  ph:'Inscription'},
+        {key:'ownerNo', req:false, ph:'Owner applied no'},
+        {key:'pattern', req:false, ph:'Pattern'},
+        {key:'color',   req:true,  ph:'Color'},
+        {key:'material',req:true,  ph:'Material'},
+        {key:'size',    req:true,  ph:'Size'},
+        {key:'unit',    req:true,  ph:'Unit'},
+        {key:'qty',     req:true,  ph:'1', type:'number', width:'70px'},
+        {key:'amount',  req:true,  ph:'0.00', type:'number', step:'0.01', width:'110px'},
+        {key:'notes',   req:false, ph:'Notes'}
+      ];
+
+      cols.forEach((c, i)=>{
+        const td = document.createElement('td');
+        td.setAttribute('data-label', document.querySelector('thead th:nth-child('+ (i+1) +')').textContent);
+
+        const input = document.createElement('input');
+        input.type = c.type || 'text';
+        if (c.step) input.step = c.step;
+        input.placeholder = c.ph;
+        input.value = (data[c.key] ?? '');
+        input.required = !!c.req;
+        input.style.width = c.width || '100%';
+        input.addEventListener('input', recompute);
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    }
+
+    function recompute(){
+      let sum = 0;
+      tbody.querySelectorAll('tr').forEach(tr=>{
+        const cells = tr.querySelectorAll('td');
+        const qty = parseFloat(cells[12].querySelector('input').value || '0');
+        const amt = parseFloat(cells[13].querySelector('input').value || '0');
+        sum += (isNaN(qty)||isNaN(amt)) ? 0 : (qty*amt);
+      });
+      totalEl.textContent = money(sum);
+    }
+
+    document.getElementById('btn-add').addEventListener('click', ()=>{ addRow(); });
+    document.getElementById('btn-clear').addEventListener('click', ()=>{
+      tbody.innerHTML=''; recompute();
+      addRow();
+    });
+
+    // 초기 1행
+    addRow();
+
+    // 액션들 (실백엔드 연동 전까지 기본 동작)
+    document.getElementById('btn-print').addEventListener('click', ()=> window.print());
+    document.getElementById('btn-save').addEventListener('click', ()=> alert('Save: connect POST /api/pawn'));
+    document.getElementById('btn-edit').addEventListener('click', ()=> alert('Edit mode: implement as needed'));
+    document.getElementById('btn-send').addEventListener('click', ()=> alert('Send: connect email/SMS API'));
+    document.getElementById('btn-delete').addEventListener('click', ()=> confirm('Delete this ticket? (server required)'));
+
+    // 레코드 리스트: 클릭 네비게이션
+    document.querySelectorAll('#list .row:not(.header)').forEach(r=>{
+      r.addEventListener('click', ()=>{ const href = r.getAttribute('data-href'); if(href) location.assign(href); });
+      r.style.cursor='pointer';
+    });
+
+  </script>
+  <div id="bp-debug"></div>
+</body>
+</html>
