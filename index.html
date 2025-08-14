@@ -2,28 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Pawn — Coco pawnshop</title>
-
-  <!-- ===== [RESPONSIVE] 필수: 모바일 반응형 활성화 ===== -->
+  <title>Pawn – Coco pawnshop</title>
+  <!-- ====== [RESPONSIVE] 필수: 모바일 반응형 활성화 ====== -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <style>
-    /* ====================== CSS (미니멀 & 반응형) ====================== */
+    /* ========================= CSS (미니멀 & 반응형) ========================= */
     :root{
-      --ink:#0f172a;         /* text */
-      --muted:#64748b;       /* secondary */
-      --line:#e2e8f0;        /* border */
-      --bg:#f8fafc;          /* page */
-      --card:#ffffff;        /* surface */
-      --accent:#0ea5e9;      /* primary */
-      --danger:#b91c1c;      /* delete */
-      --good:#059669;        /* ok */
+      --ink:#0f172a;        /* text */
+      --muted:#64748b;      /* secondary */
+      --line:#e2e8f0;       /* border */
+      --bg:#f8fafc;         /* page */
+      --surface:#ffffff;    /* surface */
+      --accent:#f9ae59;     /* primary */
+      --danger:#f91c1c;     /* delete */
+      --good:#059669;       /* ok */
     }
     *{ box-sizing:border-box; }
-    html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink);
-      font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      -webkit-text-size-adjust:100%; text-size-adjust:100%;
-    }
+    html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
     .page{ max-width:1200px; margin:0 auto; padding:16px; }
 
@@ -34,39 +30,18 @@
       gap:16px;
     }
     @media (max-width: 1024px){
-      .grid{ grid-template-columns: 1fr; } /* 스택 */
+      .grid{ grid-template-columns: 1fr; } /* 모바일 */
     }
 
     /* 공통 카드 */
     .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
-    .card h3{ margin:0 0 10px; font-size:16px; }
+    .card h3{ margin:0 0 12px; font-size:16px; }
 
-    /* ===== Block 1: 헤더 바 ===== */
+    /* ===== Block 1: 헤더 ===== */
     .headerbar{
       display:flex; align-items:center; justify-content:space-between; gap:12px;
       padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card);
       margin-bottom:12px;
-    }
-    .brand{ font-weight:800; font-size:18px; letter-spacing:.2px; }
-    .biz{ color:var(--muted); font-size:12px; }
-    .today{ font-size:12px; color:var(--muted); white-space:nowrap; }
-
-    /* ===== Block 2: 티켓 핵심 필드 ===== */
-    .form-grid{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap:10px;
-    }
-    @media (max-width: 1024px){
-      .form-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
-    @media (max-width: 560px){
-      .form-grid{ grid-template-columns: 1fr; }
-    }
-    label{ display:block; font-weight:600; font-size:12px; color:#334155; margin-bottom:4px; }
-    input, select{
-      width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; background:#fff;
-      font:inherit;
     }
 
     /* ===== Block 3: Collateral + 액션 ===== */
@@ -79,8 +54,8 @@
     .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
     .btn.danger{ border-color:var(--danger); color:#fff; background:var(--danger); }
     .btn.ghost{ background:#fff; color:#0f172a; }
-    
-    <!-- ==== MOD START: Block 3 Collateral → Card-based layout ==== -->
+
+    /* ==== MOD START: Block 3 Collateral → Card-based layout ==== */
     .items{ display:grid; gap:10px; margin-bottom:10px; }
     .item-card{ position:relative; }
     .item-card .item-del{ position:absolute; top:6px; right:6px; border:none; background:transparent; font-size:18px; line-height:1; color:var(--muted); cursor:pointer; }
@@ -89,55 +64,65 @@
     @media (max-width:1024px){ .item-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
     @media (max-width:640px){ .item-grid{ grid-template-columns:1fr; } }
     .total-line{ text-align:right; font-weight:700; padding:8px 0; }
-    <!-- ==== MOD END ==== -->
-
-    .upload{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
-    .upload input[type="file"]{ padding:6px; border:1px dashed var(--line); border-radius:8px; background:#fff; }
+    /* ==== MOD END ==== */
 
     /* ===== Block 4/5: 오른쪽 패널 ===== */
     .tabs-head{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .tab-buttons{ display:flex; flex-wrap:wrap; gap:6px; }
+    .tab-buttons{
+      display:flex; flex-wrap:wrap; gap:6px;
+    }
     .tab-buttons button{
-      padding:6px 10px; border:1px solid var(--line); background:#fff; border-radius:999px; cursor:pointer; font-weight:600;
+      border:1px solid var(--line); padding:6px 12px; border-radius:8px; background:#fff; cursor:pointer;
     }
-    .tab-buttons button.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
-    .tools{ display:flex; gap:6px; flex-wrap:wrap; }
-    .tools input[type="search"]{ border:1px solid var(--line); border-radius:999px; padding:8px 12px; min-width:180px; }
-    .list{ margin-top:10px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff; }
-    .row{ display:grid; grid-template-columns: 1.4fr .8fr .8fr .8fr .8fr; gap:8px; padding:10px; border-top:1px solid var(--line); align-items:center; }
-    .row.header{ background:#f1f5f9; font-weight:700; position:sticky; top:0; z-index:1; }
-    .row:hover{ background:#f8fafc; }
-    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--line); }
-    .badge.ok{ background:#ecfdf5; color:var(--good); border-color:#bbf7d0; }
-    .badge.due{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
-    .badge.over{ background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+    .tab-buttons button.active{
+      background:var(--accent); border-color:var(--accent); color:#fff;
+    }
 
-    @media (max-width: 1024px){
-      .row{ grid-template-columns: 1.4fr 1fr 1fr; }
-      .row .col-hide-md{ display:none; }
-    }
-    @media (max-width: 640px){
-      .row{ grid-template-columns: 1fr; }
-      .row.header{ display:none; }
-      .row > div{ display:flex; justify-content:space-between; gap:8px; border-top:1px dashed var(--line); padding-top:6px; }
-      .row > div:first-child{ border-top:none; padding-top:0; }
-      .row .label{ color:#334155; font-weight:700; }
-    }
-    /* ==== SURGICAL APPEND START ==== */
-    <!-- ==== MOD START: Block 3 Collateral → Card-based layout ==== -->
-    .item-grid input{ width:100%; min-width:0; }
-    <!-- ==== MOD END ==== -->
-    .form-grid input{ padding:7px 8px; } /* was 9px 10px */
-    table{ font-size:12.5px; } /* was 13px */
-    .page{ max-width:1140px; } /* was 1200px */
-    #bp-debug{position:fixed;bottom:8px;right:8px;padding:4px 8px;background:#000;color:#fff;font:12px/1;border-radius:6px;opacity:.75;z-index:9999}
-    #bp-debug::after{content:"≥1025px desktop";}
-    @media (max-width:1024px){#bp-debug::after{content:"≤1024px stack (1 col)";}}
-    @media (max-width:760px){#bp-debug::after{content:"≤760px items→cards";}}
-    @media (max-width:640px){#bp-debug::after{content:"≤640px right list→cards";}}
-    /* ==== SURGICAL APPEND END ==== */
+    /* 기타 스타일 생략 가능 — 필요 시 기존 CSS 유지 */
   </style>
 </head>
-...
+<body>
+  <div class="page">
+    <div class="headerbar">
+      <h1>Coco Pawnshop</h1>
+      <div class="toolbar">
+        <button class="btn primary">Add Item</button>
+        <button class="btn danger">Delete All</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left: Collateral Items -->
+      <div class="card">
+        <h3>Collateral Items</h3>
+        <div class="items">
+          <!-- 예시 아이템 -->
+          <div class="item-card">
+            <button class="item-del">×</button>
+            <div class="item-grid">
+              <div>Watch</div>
+              <div>Rolex</div>
+              <div>$5000</div>
+              <div>Gold</div>
+            </div>
+          </div>
+        </div>
+        <div class="total-line">Total: $5000</div>
+      </div>
+
+      <!-- Right: Details / Tabs -->
+      <div class="card">
+        <div class="tabs-head">
+          <div class="tab-buttons">
+            <button class="active">Details</button>
+            <button>History</button>
+          </div>
+        </div>
+        <p>Details content here...</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
