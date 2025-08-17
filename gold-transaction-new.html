@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New Metal Transaction</title>
+<style>
+body{font-family:Arial, sans-serif;margin:20px;}
+.top{display:flex;gap:10px;margin-bottom:20px;}
+.card{border:1px solid #ccc;padding:10px;border-radius:6px;min-width:150px;}
+.card .price{font-size:1.1em;font-weight:bold;}
+.card .updated{font-size:0.8em;color:#555;}
+.card .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:4px;background:#888;}
+.card .dot.live{background:green;}
+label{display:block;margin-top:10px;}
+input,select{padding:4px;margin-top:4px;}
+.readonly{background:#f3f3f3;}
+.buttons{margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="top" id="spotCards"></div>
+<form id="txForm">
+<input type="hidden" id="txId">
+<label>Customer Name
+  <input id="custName" required>
+</label>
+<label>Phone
+  <input id="custPhone">
+</label>
+<label>Email
+  <input id="custEmail" type="email">
+</label>
+<label>Metal
+  <select id="metal">
+    <option value="gold">Gold</option>
+    <option value="silver">Silver</option>
+    <option value="platinum">Platinum</option>
+  </select>
+</label>
+<div id="karatRow">
+<label>Karat
+  <select id="karat">
+    <option value="24">24k</option>
+    <option value="22">22k</option>
+    <option value="21">21k</option>
+    <option value="20">20k</option>
+    <option value="18">18k</option>
+    <option value="14">14k</option>
+    <option value="10">10k</option>
+  </select>
+</label>
+</div>
+<div id="fineRow" style="display:none;">
+<label>Fineness
+  <input id="fineness" type="number" step="0.001" min="0" max="1" value="0.999">
+</label>
+</div>
+<label>Weight (g)
+  <input id="weightG" type="number" step="0.001" min="0">
+</label>
+<label>Weight (dwt)
+  <input id="weightDwt" type="number" step="0.001" min="0">
+</label>
+<label>Fee %
+  <input id="feePercent" type="number" step="0.01" min="0" value="0">
+</label>
+<label>Fee $
+  <input id="feeFlat" type="number" step="0.01" min="0" value="0">
+</label>
+<label>Manual Factor
+  <input id="manualFactor" type="number" step="0.0001" min="0" max="1">
+</label>
+<div>
+  Spot (USD/oz): <span id="spotOz">0</span>
+</div>
+<div>
+  Spot (USD/g): <span id="spotG">0</span>
+</div>
+<div>
+  Base value: <span id="baseVal">0</span>
+</div>
+<div>
+  Adjusted payout: <span id="payout">0</span>
+</div>
+<div class="buttons">
+  <button type="button" id="saveBtn" disabled>Save</button>
+  <button type="button" id="printBtn">Print</button>
+</div>
+</form>
+<div id="warn" style="color:red;margin-top:10px;"></div>
+<script>
+const cardsEl = document.getElementById('spotCards');
+const warnEl = document.getElementById('warn');
+let prices = {};
+function renderCards(data){
+  cardsEl.innerHTML='';
+  ['gold','silver','platinum'].forEach(m=>{
+    const info = data[m];
+    const perG = info.spot / 31.1034768;
+    prices[m]={spot:info.spot, perG:perG};
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`<div class="price">${m.charAt(0).toUpperCase()+m.slice(1)} $${info.spot.toFixed(2)}/oz<br>$${perG.toFixed(4)}/g</div>`+
+      `<div class="updated">Last updated ${new Date(data.timestamp*1000).toLocaleTimeString()}<span class="dot ${data.cache.mode==='live'?'live':''}"></span></div>`;
+    cardsEl.appendChild(card);
+  });
+  updateCalc();
+}
+async function fetchPrices(){
+  try{
+    const r = await fetch('api-gold-price.php');
+    const j = await r.json();
+    if(j.ok){
+      renderCards(j);
+      warnEl.textContent='';
+    }else{
+      warnEl.textContent='Price API error';
+    }
+  }catch(e){
+    warnEl.textContent='Price API error';
+  }
+}
+fetchPrices();
+setInterval(fetchPrices,60000);
+
+const txIdEl=document.getElementById('txId');
+function genId(){
+  const pad=n=>n.toString().padStart(2,'0');
+  const d=new Date();
+  const rand=Math.random().toString(36).substr(2,4).toUpperCase();
+  return `GT-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${rand}`;
+}
+txIdEl.value=genId();
+
+const metalEl=document.getElementById('metal');
+const karatRow=document.getElementById('karatRow');
+const fineRow=document.getElementById('fineRow');
+metalEl.addEventListener('change',()=>{
+  if(metalEl.value==='gold'){
+    karatRow.style.display='block';
+    fineRow.style.display='none';
+  }else{
+    karatRow.style.display='none';
+    fineRow.style.display='block';
+    if(metalEl.value==='silver') fineness.value=0.999;
+    if(metalEl.value==='platinum') fineness.value=0.95;
+  }
+  updateCalc();
+});
+
+const weightG=document.getElementById('weightG');
+const weightD=document.getElementById('weightDwt');
+let suppress=false;
+weightG.addEventListener('input',()=>{
+  if(suppress) return; suppress=true; weightD.value=(parseFloat(weightG.value||0)*20/31.1034768).toFixed(3); suppress=false; updateCalc();});
+weightD.addEventListener('input',()=>{
+  if(suppress) return; suppress=true; weightG.value=(parseFloat(weightD.value||0)*31.1034768/20).toFixed(3); suppress=false; updateCalc();});
+['karat','fineness','feePercent','feeFlat','manualFactor','metal'].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.addEventListener('input',updateCalc);});
+function purityFactor(){
+  if(metalEl.value==='gold') return parseFloat(document.getElementById('karat').value)/24;
+  return parseFloat(document.getElementById('fineness').value||0);
+}
+function updateCalc(){
+  const spotInfo=prices[metalEl.value];
+  if(spotInfo){
+    spotOz.textContent=spotInfo.spot.toFixed(2);
+    spotG.textContent=spotInfo.perG.toFixed(4);
+  }
+  const w=parseFloat(weightG.value)||0;
+  const base=w*(spotInfo?spotInfo.perG:0);
+  const pf=purityFactor();
+  let factor=pf;
+  const mfo=parseFloat(manualFactor.value);
+  if(!isNaN(mfo) && mfo>0) factor=mfo;
+  const feeP=parseFloat(feePercent.value)||0;
+  const feeF=parseFloat(feeFlat.value)||0;
+  const pre=base*factor;
+  const payout=pre-(pre*feeP/100)-feeF;
+  baseVal.textContent=base.toFixed(2);
+  payoutEl=payout;
+  payoutSpan.textContent=payout.toFixed(2);
+  spotPerGram.value=spotInfo?spotInfo.perG:0;
+  checkValidity();
+}
+const spotOz=document.getElementById('spotOz');
+const spotG=document.getElementById('spotG');
+const baseVal=document.getElementById('baseVal');
+const payoutSpan=document.getElementById('payout');
+const feePercent=document.getElementById('feePercent');
+const feeFlat=document.getElementById('feeFlat');
+const manualFactor=document.getElementById('manualFactor');
+let payoutEl=0;let spotPerGram={value:0};
+function checkValidity(){
+  const nameOk=custName.value.trim().length>0;
+  const wOk=parseFloat(weightG.value)>0;
+  const pf=purityFactor();
+  const pfOk=pf>0;
+  saveBtn.disabled=!(nameOk && wOk && pfOk && prices[metalEl.value]);
+}
+['custName','weightG','karat','fineness'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input',checkValidity);});
+
+function collectRecord(){
+  const rec={
+    id: txIdEl.value,
+    customer:{name:custName.value.trim(),phone:custPhone.value.trim(),email:custEmail.value.trim()},
+    metal: metalEl.value,
+    purity:{type: metalEl.value==='gold'?'karat':'fineness', value: metalEl.value==='gold'?parseFloat(karat.value):parseFloat(fineness.value)},
+    weights:{g:parseFloat(weightG.value)||0, dwt:parseFloat(weightD.value)||0},
+    factor: (manualFactor.value?parseFloat(manualFactor.value):purityFactor()),
+    fees:{percent:parseFloat(feePercent.value)||0, flat:parseFloat(feeFlat.value)||0},
+    computed:{spot:spotInfo().spot, spotPerGram:spotInfo().perG, baseValue:parseFloat(baseVal.textContent)||0, payout:payoutEl}
+  };
+  return rec;
+}
+function spotInfo(){return prices[metalEl.value]||{spot:0,perG:0};}
+
+saveBtn.addEventListener('click',async()=>{
+  const rec=collectRecord();
+  try{
+    const r=await fetch('api-gold-save.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});
+    const j=await r.json();
+    if(j.ok){
+      location.href=`gold-transaction-detail.html?id=${encodeURIComponent(j.id)}`;
+    }else{alert('Save failed');}
+  }catch(e){alert('Save error');}
+});
+
+printBtn.addEventListener('click',()=>{
+  const rec=collectRecord();
+  sessionStorage.setItem('GT_LAST',JSON.stringify(rec));
+  window.open('gold-transaction-print.html','_blank');
+});
+
+checkValidity();
+</script>
+</body>
+</html>
