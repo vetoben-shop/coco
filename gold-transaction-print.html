@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Print Transaction</title>
+<style>
+body{font-family:Arial, sans-serif;margin:20px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<div id="content">Loading...</div>
+<script>
+async function load(){
+  const params=new URL(location.href).searchParams; let rec=null;
+  const id=params.get('id');
+  if(id){
+    try{const r=await fetch('api-gold-save.php?id='+encodeURIComponent(id));const j=await r.json();if(j.ok)rec=j.record;}catch(e){}
+  } else {
+    const s=sessionStorage.getItem('GT_LAST'); if(s) rec=JSON.parse(s);
+  }
+  if(!rec){document.getElementById('content').textContent='No transaction to print.';return;}
+  const info=`<div>
+  <h2>Receipt</h2>
+  <div>Business Name<br>Address line<br>Phone / Email</div>
+  <hr>
+  <div>Date: ${new Date().toLocaleString()}</div>
+  <div>Transaction ID: ${rec.id}</div>
+  <div>Customer: ${rec.customer.name||''} ${rec.customer.phone||''} ${rec.customer.email||''}</div>
+  <div>Metal: ${rec.metal}</div>
+  <div>Purity: ${rec.purity.value} ${rec.purity.type}</div>
+  <div>Weight g: ${rec.weights.g}</div>
+  <div>Weight dwt: ${rec.weights.dwt}</div>
+  <div>Spot/oz: $${rec.computed.spot.toFixed(2)}</div>
+  <div>Spot/g: $${rec.computed.spotPerGram.toFixed(4)}</div>
+  <div>Base value: $${rec.computed.baseValue.toFixed(2)}</div>
+  <div>Payout: $${rec.computed.payout.toFixed(2)}</div>
+  <hr>
+  <div style="font-size:0.8em;">Disclaimer: ...</div>
+  </div>`;
+  document.getElementById('content').innerHTML=info;
+  window.print();
+}
+load();
+</script>
+</body>
+</html>

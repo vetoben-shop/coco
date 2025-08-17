@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Transaction Detail</title>
+<style>
+body{font-family:Arial, sans-serif;margin:20px;}
+label{display:block;margin-top:10px;}
+input,select{padding:4px;margin-top:4px;}
+.readonly{background:#f3f3f3;}
+.buttons{margin-top:20px;}
+</style>
+</head>
+<body>
+<h2>Transaction Detail</h2>
+<form id="form">
+<input type="hidden" id="txId">
+<label>Customer Name<input id="custName"></label>
+<label>Phone<input id="custPhone"></label>
+<label>Email<input id="custEmail" type="email"></label>
+<label>Metal<select id="metal"><option value="gold">Gold</option><option value="silver">Silver</option><option value="platinum">Platinum</option></select></label>
+<div id="karatRow"><label>Karat<select id="karat"><option value="24">24k</option><option value="22">22k</option><option value="21">21k</option><option value="20">20k</option><option value="18">18k</option><option value="14">14k</option><option value="10">10k</option></select></label></div>
+<div id="fineRow" style="display:none;"><label>Fineness<input id="fineness" type="number" step="0.001" min="0" max="1"></label></div>
+<label>Weight (g)<input id="weightG" type="number" step="0.001" min="0"></label>
+<label>Weight (dwt)<input id="weightDwt" type="number" step="0.001" min="0"></label>
+<label>Fee %<input id="feePercent" type="number" step="0.01" min="0"></label>
+<label>Fee $<input id="feeFlat" type="number" step="0.01" min="0"></label>
+<label>Factor<input id="manualFactor" type="number" step="0.0001" min="0" max="1"></label>
+<div>Saved payout: <span id="savedPayout">0</span></div>
+<div>Current payout: <span id="currentPayout">0</span></div>
+<div class="buttons">
+<button type="button" id="editBtn">Edit</button>
+<button type="button" id="printBtn">Print</button>
+</div>
+</form>
+<script>
+function qs(key){return new URL(location.href).searchParams.get(key);}
+let prices={};
+async function fetchPrices(){try{const r=await fetch('api-gold-price.php');const j=await r.json();if(j.ok)prices=j;}catch(e){}}
+function spotInfo(m){const info=prices[m];if(info){return {spot:info.spot, perG:info.spot/31.1034768};}return {spot:0,perG:0};}
+function purityFactor(){if(metal.value==='gold')return parseFloat(karat.value)/24;return parseFloat(fineness.value)||0;}
+function recalc(){const info=spotInfo(metal.value);const base=(parseFloat(weightG.value)||0)*info.perG;const factor=manualFactor.value?parseFloat(manualFactor.value):purityFactor();const pre=base*factor;const feeP=(parseFloat(feePercent.value)||0);const feeF=(parseFloat(feeFlat.value)||0);const payout=pre-(pre*feeP/100)-feeF;currentPayout.textContent=payout.toFixed(2);}
+['metal','karat','fineness','weightG','weightDwt','feePercent','feeFlat','manualFactor'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('input',recalc);});
+fetchPrices().then(()=>{recalc();});
+const id=qs('id');
+fetch(`api-gold-save.php?id=${encodeURIComponent(id)}`).then(r=>r.json()).then(j=>{if(!j.ok)return;const r=j.record;txId.value=r.id;custName.value=r.customer.name;custPhone.value=r.customer.phone;custEmail.value=r.customer.email;metal.value=r.metal; if(r.purity.type==='karat'){karat.value=r.purity.value;fineness.value='';karatRow.style.display='block';fineRow.style.display='none';}else{fineness.value=r.purity.value;karatRow.style.display='none';fineRow.style.display='block';}weightG.value=r.weights.g;weightDwt.value=r.weights.dwt;feePercent.value=r.fees.percent;feeFlat.value=r.fees.flat;manualFactor.value=r.factor!=r.purity.value?r.factor:'';savedPayout.textContent=r.computed.payout.toFixed(2);Array.from(document.querySelectorAll('#form input, #form select')).forEach(el=>el.disabled=true);});
+function setEdit(on){Array.from(document.querySelectorAll('#form input, #form select')).forEach(el=>el.disabled=!on);recalc();}
+editBtn.addEventListener('click',async()=>{if(editBtn.textContent==='Edit'){setEdit(true);editBtn.textContent='Save';}else{const rec={id:txId.value,customer:{name:custName.value.trim(),phone:custPhone.value.trim(),email:custEmail.value.trim()},metal:metal.value,purity:{type:metal.value==='gold'?'karat':'fineness',value:metal.value==='gold'?parseFloat(karat.value):parseFloat(fineness.value)},weights:{g:parseFloat(weightG.value)||0,dwt:parseFloat(weightDwt.value)||0},factor:(manualFactor.value?parseFloat(manualFactor.value):purityFactor()),fees:{percent:parseFloat(feePercent.value)||0,flat:parseFloat(feeFlat.value)||0},computed:{spot:spotInfo(metal.value).spot,spotPerGram:spotInfo(metal.value).perG,baseValue:(parseFloat(weightG.value)||0)*spotInfo(metal.value).perG,payout:parseFloat(currentPayout.textContent)} };const resp=await fetch('api-gold-save.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});const j=await resp.json();if(j.ok){savedPayout.textContent=j.record.computed.payout.toFixed(2);setEdit(false);editBtn.textContent='Edit';}else alert('Save failed');}});
+printBtn.addEventListener('click',()=>{window.open(`gold-transaction-print.html?id=${encodeURIComponent(txId.value)}`,'_blank');});
+</script>
+</body>
+</html>
